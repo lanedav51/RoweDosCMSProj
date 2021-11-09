@@ -141,9 +141,13 @@
   <ItemGroup>
     <ClInclude Include="cmsSystem.h" />
     <ClInclude Include="content.h" />
+    <ClInclude Include="editPriv.h" />
     <ClInclude Include="user.h" />
     <ClInclude Include="login.h" />
     <ClInclude Include="logs.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

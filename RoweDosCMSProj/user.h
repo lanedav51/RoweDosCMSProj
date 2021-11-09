@@ -5,12 +5,28 @@ using namespace std;
 class user
 {
 	public:
+		user(string username, int userID, string group)
+		{
+			this->username = username;
+			this->userID = userID;
+			this->group = group;
+		}
+		user()
+		{
+			username = "";
+			userID = -1;
+			group = "";
+		}
 
-		string getUser() { return user; }
+		bool setUser(string username) { this->username = username; return true; }
+		bool setUserID() { this->userID = userID; return true; }
+		bool setGroup() { this->group = group; return true; }
+
+		string getUser() { return username; }
 		int getUserID() { return userID; }
 		string getGroup() { return group; }
 	private:
-		string user = "";
-		int userID = -1;
-		string group = "";
+		string username;
+		int userID;
+		string group;
 };

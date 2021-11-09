@@ -30,5 +30,13 @@
     <ClInclude Include="user.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="editPriv.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

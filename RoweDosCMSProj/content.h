@@ -13,14 +13,22 @@ public:
 		this->ownerID = ownerID;
 	}
 
+	content()
+	{
+		fileSize = 0;
+		fileName = "";
+		fileLoc = "";
+		ownerID = -1;
+	}
+
 	float getFileSize() { return fileSize; }
 	string getFileName() { return fileName; }
 	string getFileLoc() { return fileLoc; }
 	int getOwnerID() { return ownerID; }
 
 private:
-	float fileSize = 0;
-	string fileName = "";
-	string fileLoc = "";
-	int ownerID = -1;
+	float fileSize;
+	string fileName;
+	string fileLoc;
+	int ownerID;
 };
