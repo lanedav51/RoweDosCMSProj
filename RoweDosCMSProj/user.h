@@ -4,6 +4,11 @@ using namespace std;
 
 class user
 {
+	private:
+		string username;
+		int userID;
+		string group;
+
 	public:
 		user(string username, int userID, string group)
 		{
@@ -25,8 +30,4 @@ class user
 		string getUser() { return username; }
 		int getUserID() { return userID; }
 		string getGroup() { return group; }
-	private:
-		string username;
-		int userID;
-		string group;
 };

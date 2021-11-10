@@ -141,12 +141,16 @@
   <ItemGroup>
     <ClInclude Include="cmsSystem.h" />
     <ClInclude Include="content.h" />
-    <ClInclude Include="editPriv.h" />
+    <ClInclude Include="logEntry.h" />
     <ClInclude Include="user.h" />
     <ClInclude Include="login.h" />
     <ClInclude Include="logs.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="cmsSystem.cpp" />
+    <ClCompile Include="logEntry.cpp" />
+    <ClCompile Include="login.cpp" />
+    <ClCompile Include="logs.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
