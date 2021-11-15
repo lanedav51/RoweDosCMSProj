@@ -148,7 +148,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="cmsSystem.cpp" />
-    <ClCompile Include="logEntry.cpp" />
     <ClCompile Include="login.cpp" />
     <ClCompile Include="logs.cpp" />
     <ClCompile Include="main.cpp" />

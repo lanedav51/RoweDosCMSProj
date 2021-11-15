@@ -97,18 +97,32 @@ user login()
 bool regUser(string user, string pass, string group) //register user to db
 {
 	//this is only called once user is unique and password meets complexity USING CSV
-	ofstream userList;
+	fstream userList;
 	userList.open("userList.csv");
-	//ye
+	//find userID
+	int userId = -1;
+	string line;
+	while (getline(userList, line))
+	{
+		userId++;
+	}
+
+	if (checkUniqueUser(user) == true && checkComplexity(pass) == true)
+	{
+		userList << userId << ", " << user << ", " << pass << ", " << "standard, " << "\n";
+	}
+
 	userList.close();
 }
 
 bool createUserCsv()
 {
-	ofstream userList("userList.csv");
-	userList << "USERID," << "USERNAME" << "PASSWORD" << "GROUP";
+	fstream userList("userList.csv");
+	userList << "USERID, " << "USERNAME, " << "PASSWORD, " << "GROUP, " << "\n";
 	userList.close();
 }
+
+
 
 bool checkDb(string user, string pass)//checks info against db
 {
@@ -118,22 +132,25 @@ bool checkDb(string user, string pass)//checks info against db
 bool checkComplexity(string pass)
 {
 	//checks the password's complexity
+	return true;
 
 }
 
 bool checkUniqueUser(string user)
 {
 	//checks to see if username is unique
+	fstream userList("userList.csv");
+
 }
 
 string encryptInfo()//encrypts info into db
 {
-
+	return "true";
 }
 
 string decryptInfo()//decrypts info taken from db
 {
-
+	return "true";
 }
 
 user setCurrentUser(string username)
