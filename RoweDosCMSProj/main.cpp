@@ -8,7 +8,7 @@
 #include "user.h"
 using namespace std;
 
-void main()
+int main()
 {
 	user currentUser;
 	string group;
@@ -36,9 +36,9 @@ void main()
 	else
 	{
 		cout << "Problem getting user group" << endl;
-		exit(EXIT_FAILURE);
+		return 0;
 		//exit with failure to get group
 	}
 
-
+	return 0;
 }

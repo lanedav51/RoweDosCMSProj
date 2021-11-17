@@ -24,8 +24,8 @@ class user
 		}
 
 		bool setUser(string username) { this->username = username; return true; }
-		bool setUserID() { this->userID = userID; return true; }
-		bool setGroup() { this->group = group; return true; }
+		bool setUserID(int userID) { this->userID = userID; return true; }
+		bool setGroup(string group) { this->group = group; return true; }
 
 		string getUser() { return username; }
 		int getUserID() { return userID; }
