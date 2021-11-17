@@ -335,7 +335,70 @@ bool deleteContent(int userID, string fileName)
 	//delete content based on name, check ownerId and match, if so delete line
 
 	//first find filename, if it doesnt exist tell user and retry
+
 	//second confirm whether owns it, if doesnt then tell user and retry
+	vector<string> contentInfo;
+	string line;
+	vector<string> fileNames = getFileNames();
+	vector<string> ownerIds = getFileOwners();
+	string userConfirmation = "";
+	fstream contentList;
+	for (int i = 0; i < fileNames.size(); i++)
+	{
+		if (fileName == fileNames[i])
+		{
+			//match
+			if (to_string(userID) == ownerIds[i])
+			{
+				//match
+				cout << "Are you sure you wish to delete this file? (Y/N)" << endl;
+				cin >> userConfirmation;
+				if (userConfirmation == "y" || userConfirmation == "Y")
+				{
+					cout << "File being deleted" << endl;
+
+					while (getline(contentList, line))
+					{
+						size_t begin, end = 0;
+						string delim = ",";
+						while ((end = line.find(delim)) != string::npos)
+						{
+							contentInfo.push_back(line.substr(0, end));
+							line.erase(0, end + delim.length());
+						}
+					}
+
+					if (!contentList.eof())
+					{
+						for (int k = 0; k < fileNames.size(); k++)
+						{
+							contentList << contentInfo[k - 1];
+						}
+						contentList << contentInfo[contentInfo.size() - 1] << "\n";
+					}
+
+					cout << "File deleted" << endl;
+				}
+				else if(userConfirmation == "N" || userConfirmation == "n")
+				{
+					cout << "Returning to home screen" << endl;
+					return false;
+				}
+
+			}
+			else
+			{
+				cout << "You are not the owner of this file" << endl;
+				return false;
+			}
+			
+		}
+		else
+		{
+			cout << "File name not found, please try again..." << endl;
+			return false;
+		}
+	}
 	//lastly confirm deletion
 	return true;
 }
