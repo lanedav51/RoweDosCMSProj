@@ -18,17 +18,16 @@ user login()
 	string password;
 	int userID;
 	int choice = -1;
-	bool loginLoop = true;
+	bool loginLoop = true, loginCsv = false;
 	bool passLoop = true;
 	bool userLoop = true;
 	bool regSuccess = false;
 
+
 	do
 	{
-		if (userListExist() == false)
-		{
-			createUserCsv();
-		}
+		loginCsv = userListExist();
+		//cout << loginCsv;
 		cout << "Welcome, would you like to (1)login, (2)register, or (3)exit the program?" << endl;
 		cin >> choice;
 		switch (choice)
@@ -42,10 +41,7 @@ user login()
 				if (checkDb(username, password) == false)
 				{
 					cout << "Username or password is incorrect, please try again" << endl; //dont let potential attacker know which is incorrect, user will know
-					cout << "Enter username... " << endl;
-					cin >> username;
-					cout << "Enter password... " << endl;
-					cin >> password;
+					break;;
 				}
 				else
 				{
@@ -105,8 +101,10 @@ user login()
 
 bool userListExist()
 {
-	fstream file("userList.csv");
-	return file.good();
+	fstream fileStream("userList.csv");
+	if (fileStream.fail())
+		return false;
+	return true;
 }
 
 vector<string> getUsers()

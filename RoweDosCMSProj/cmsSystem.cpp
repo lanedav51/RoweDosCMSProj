@@ -37,14 +37,16 @@ int displayUserOptions(int userID)
 				cin >> fileName;
 				cout << "What is the location of your file?\n";
 				cin >> fileLoc;
-				if (addContent(userID, fileName, fileLoc) == false)
+				if (addContent(userID, fileName, fileLoc) == true)
 				{
-					inputLoop = true;
+					inputLoop = false;
 				}
 			} while (inputLoop == true);
 			break;;
 		case 3:
-			//deleteContent(userID);
+			cout << "What file would you like to delete?\n";
+			cin >> fileName;
+			deleteContent(userID, fileName);
 			break;;
 		case 4:
 			//modifyContent(userID);
@@ -63,6 +65,7 @@ int displayAdminOptions(int userID)
 {
 	int choice = -1;
 	bool choiceLoop = true;
+	bool inputLoop = false;
 	string fileName, fileLoc;
 
 	if (contentListExist() == false)
@@ -79,13 +82,21 @@ int displayAdminOptions(int userID)
 			viewContent(userID);
 			break;;
 		case 2:
-			cout << "What would you like to call your file?\n";
-			cin >> fileName;
-			cout << "What is the location of your file?\n";
-			cin >> fileLoc;
-			addContent(userID, fileName, fileLoc);
+			do {
+				cout << "What would you like to call your file?\n";
+				cin >> fileName;
+				cout << "What is the location of your file?\n";
+				cin >> fileLoc;
+				if (addContent(userID, fileName, fileLoc) == false)
+				{
+					inputLoop = false;
+				}
+			} while (inputLoop == true);
+			break;;
 		case 3:
-			//deleteContent(userID);
+			cout << "What file would you like to delete?\n";
+			cin >> fileName;
+			deleteContent(userID, fileName);
 			break;;
 		case 4:
 			//modifyContent(userID);
@@ -132,7 +143,7 @@ bool viewContent(int userID)
 	fileOwners = getFileOwners();
 
 	int i = 0;
-	cout << fileOwners.size();
+	//cout << fileOwners.size();
 	for (i = 0; i < fileOwners.size(); i++)
 	{
 		if (to_string(userID) == fileOwners[i])
@@ -356,18 +367,35 @@ bool deleteContent(int userID, string fileName)
 				if (userConfirmation == "y" || userConfirmation == "Y")
 				{
 					cout << "File being deleted" << endl;
-
+					int j = 0;
+					contentList.open("contentList.csv");
 					while (getline(contentList, line))
 					{
-						size_t begin, end = 0;
-						string delim = ",";
-						while ((end = line.find(delim)) != string::npos)
+						if ((j != i))
 						{
-							contentInfo.push_back(line.substr(0, end));
-							line.erase(0, end + delim.length());
+							size_t begin, end = 0;
+							string delim = ",";
+							while (((end = line.find(delim)) != string::npos))
+							{
+								contentInfo.push_back(line.substr(0, end));
+								line.erase(0, end + delim.length());
+							}
+						}
+						j++;
+					}
+					contentList.close();
+
+					contentList.open("contentList.csv", ios::out);
+					for (int k = 0; k < contentInfo.size(); k++)
+					{
+						contentList << contentInfo[k] << ",";
+						if (k % 4 == 0 && k != 0)
+						{
+							contentList << "\n";
 						}
 					}
-
+					contentList.close();
+					/*
 					if (!contentList.eof())
 					{
 						for (int k = 0; k < fileNames.size(); k++)
@@ -375,9 +403,10 @@ bool deleteContent(int userID, string fileName)
 							contentList << contentInfo[k - 1];
 						}
 						contentList << contentInfo[contentInfo.size() - 1] << "\n";
-					}
+					}*/
 
 					cout << "File deleted" << endl;
+					return true;
 				}
 				else if(userConfirmation == "N" || userConfirmation == "n")
 				{
@@ -393,14 +422,11 @@ bool deleteContent(int userID, string fileName)
 			}
 			
 		}
-		else
-		{
-			cout << "File name not found, please try again..." << endl;
-			return false;
-		}
 	}
+
 	//lastly confirm deletion
-	return true;
+	cout << "Filename not found\n";
+	return false;
 }
 bool modifyContent(int userID)
 {
