@@ -160,6 +160,7 @@ bool regUser(string user, string pass, string group) //register user to db
 	if (checkUniqueUser(user) == true && checkComplexity(pass) == true)
 	{
 		userList << userId << "," << user << "," << pass << "," << "user," << "\n";
+		cout << "Registering" << endl;
 	}
 	else
 	{
