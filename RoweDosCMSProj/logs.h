@@ -4,6 +4,9 @@
 #include "logEntry.h"
 using namespace std;
 
-bool logEvent();
+bool logEvent(string username, string logDesc);
+bool logFileExist();
+bool createLogCsv();
+
 void printReport();
 bool downloadReport();

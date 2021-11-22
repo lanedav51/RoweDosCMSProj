@@ -5,10 +5,12 @@
 #include <string>
 #include <regex>
 #include <sstream>
+#include <filesystem>
 #include "user.h"
 #include "logs.h"
 #include "login.h"
 #include "cmsSystem.h"
+#include "content.h"
 using namespace std;
 
 int displayUserOptions(int userID)
@@ -37,6 +39,11 @@ int displayUserOptions(int userID)
 				cin >> fileName;
 				cout << "What is the location of your file?\n";
 				cin >> fileLoc;
+				if (!fileExist(fileLoc))
+				{
+					cout << "File doesn't exist" << endl;
+					break;;
+				}
 				if (addContent(userID, fileName, fileLoc) == true)
 				{
 					inputLoop = false;
@@ -49,7 +56,7 @@ int displayUserOptions(int userID)
 			deleteContent(userID, fileName);
 			break;;
 		case 4:
-			//modifyContent(userID);
+			modifyContent(userID);
 			break;;
 		case 5:
 			cout << "Come again" << endl;
@@ -87,6 +94,11 @@ int displayAdminOptions(int userID)
 				cin >> fileName;
 				cout << "What is the location of your file?\n";
 				cin >> fileLoc;
+				if (!fileExist(fileLoc))
+				{
+					cout << "File doesn't exist" << endl;
+					break;;
+				}
 				if (addContent(userID, fileName, fileLoc) == false)
 				{
 					inputLoop = false;
@@ -99,10 +111,10 @@ int displayAdminOptions(int userID)
 			deleteContent(userID, fileName);
 			break;;
 		case 4:
-			//modifyContent(userID);
+			modifyContent(userID);
 			break;;
 		case 5:
-			//edit user permissions
+			changePerm(userID);
 			break;;
 		case 6:
 			cout << "Come again" << endl;
@@ -118,8 +130,22 @@ int displayAdminOptions(int userID)
 
 bool contentListExist()
 {
-	fstream file("contentList.csv");
-	return file.good();
+	fstream fileStream("contentList.csv");
+	if (fileStream.fail())
+	{
+		return false;
+	}
+	return true;
+}
+
+bool fileExist(string filePath)
+{
+	fstream fileStream(filePath);
+	if (fileStream.fail())
+	{
+		return false;
+	}
+	return true;
 }
 
 bool createContentCsv()
@@ -136,7 +162,8 @@ bool viewContent(int userID)
 {
 	cout << "Here are the files you have access to...\n_________________________________________\nNAME          FILESIZE         FILE LOCATION\n___________________________________________________\n";
 	//For each line, if userID is equal to ownerID, print out the other 3
-	vector<string> fileNames, fileLocs, fileSizes, fileOwners;
+	vector<string> fileNames, fileLocs, fileOwners;
+	vector<string> fileSizes;
 	fileNames = getFileNames();
 	fileLocs = getFileLocations();
 	fileSizes = getFileSizes();
@@ -151,8 +178,17 @@ bool viewContent(int userID)
 			cout << fileNames[i] << "         " << fileSizes[i] << "             " << fileLocs[i] << endl;
 		}
 	}
-
+	//logEvent(username, "Viewed Content");
 	return true;
+}
+
+string getUsername(int userID)
+{
+	vector<string> usernameList = getUsers();
+	for (int i = 0; i < usernameList.size(); i++)
+	{
+
+	}
 }
 
 vector<string> getFileNames()
@@ -190,9 +226,10 @@ vector<string> getFileSizes()
 	fstream contentList("contentList.csv");
 	vector<string> fileVal; //vector of all values comma delimited
 	vector<string> fileSizes;
+	float value;
 	int columnNum = 0;
 	int val, i;
-	string line, value;
+	string line;
 
 	while (getline(contentList, line))
 	{
@@ -278,8 +315,28 @@ vector<string> getFileOwners()
 
 float getFileSize(string fileLoc)
 {
-	//not sure how we do this but we gotta
-	return 50;
+	ifstream fileSize(fileLoc, ios::binary);
+	fileSize.seekg(0, ios::end);
+	return fileSize.tellg();
+}
+
+string getFileLoc(string fileName)
+{
+	//compare lists to lists to lists
+	vector<string> fileNames = getFileNames();
+	vector<string> fileLocations = getFileLocations();
+
+	for (int i = 0; i < fileNames.size(); i++)
+	{
+		if (fileName == fileNames[i])
+		{
+			return fileLocations[i];
+		}
+		else
+		{
+			return "Failed";
+		}
+	}
 }
 
 bool addContent(int userID, string fileName, string fileLoc)
@@ -292,7 +349,7 @@ bool addContent(int userID, string fileName, string fileLoc)
 	fstream contentList("contentList.csv");
 	vector<string> fileVal; //vector of all values comma delimited
 	vector<string> fileNames, fileLocs;
-	bool fileNameMatch, fileLocationMatch;
+	bool fileNameMatch = false, fileLocationMatch = false;
 	int columnNum = 0;
 	int val, i;
 	string line, value;
@@ -307,10 +364,6 @@ bool addContent(int userID, string fileName, string fileLoc)
 			fileNameMatch = true;
 			break;
 		}
-		else
-		{
-			fileNameMatch = false;
-		}
 	}
 
 	for (i = 0; i < fileLocs.size(); i++)
@@ -319,10 +372,6 @@ bool addContent(int userID, string fileName, string fileLoc)
 		{
 			fileLocationMatch = true;
 			break;
-		}
-		else
-		{
-			fileLocationMatch = false;
 		}
 	}
 	
@@ -336,7 +385,8 @@ bool addContent(int userID, string fileName, string fileLoc)
 		//add the content to csv
 		ofstream contentList;
 		contentList.open("contentList.csv", ios::app);
-		contentList << fileName << "," << /*getFileSize(fileLoc)*/ 50 << "," << fileLoc << "," << userID << ",\n";
+		contentList << fileName << "," << getFileSize(fileLoc) << "," << fileLoc << "," << userID << ",\n";
+		contentList.close();
 		return true;
 	}
 	return false;
@@ -389,22 +439,12 @@ bool deleteContent(int userID, string fileName)
 					for (int k = 0; k < contentInfo.size(); k++)
 					{
 						contentList << contentInfo[k] << ",";
-						if (k % 4 == 0 && k != 0)
+						if (((k+1) % 4 == 0) && k != 0)
 						{
 							contentList << "\n";
 						}
 					}
 					contentList.close();
-					/*
-					if (!contentList.eof())
-					{
-						for (int k = 0; k < fileNames.size(); k++)
-						{
-							contentList << contentInfo[k - 1];
-						}
-						contentList << contentInfo[contentInfo.size() - 1] << "\n";
-					}*/
-
 					cout << "File deleted" << endl;
 					return true;
 				}
@@ -431,21 +471,337 @@ bool deleteContent(int userID, string fileName)
 bool modifyContent(int userID)
 {
 	//this one is weird, ask user if they want content name changed, or file changed
+	int choice;
+	bool modifyLoop = true;
+	string fileName;
+
+	do
+	{
+		cout << "Would you like to (1)Change Content Path, (2)Change File Name, or (3)Exit?" << endl;
+		cin >> choice;
+		cout << "What file would you like to modify?" << endl;
+		cin >> fileName;
+
+		if (choice == 1)
+		{
+			if (checkPerm(userID, fileName))
+			{
+				overrideContent(userID, fileName);
+				modifyLoop = false;
+			}
+			else
+			{
+				cout << "You do not have permission to modify this file" << endl;
+			}
+		}
+		else if (choice == 2)
+		{
+			if (checkPerm(userID, fileName))
+			{
+				changeFileName(userID, fileName);
+				modifyLoop = false;
+			}
+			else
+			{
+				cout << "You do not have permission to modify this file" << endl;
+			}
+		}
+		else if (choice == 3)
+		{
+			cout << "Returning to home screen" << endl;
+			return false;
+		}
+		else
+		{
+			cout << "Please enter a valid option" << endl;
+		}
+	} while (modifyLoop == true);
 	return true;
 }
-bool overrideContent(int userID)
+bool overrideContent(int userID, string fileName)
 {
+	vector<string> fileNames = getFileNames();
+	vector<string> filePaths = getFileLocations();
+	vector<string> fileSizes = getFileSizes();
+	vector<string> ownerIDs = getFileOwners();
+	content current(getFileSize(getFileLoc(fileName)), fileName, getFileLoc(fileName), userID); //init the content being manipulated
 	//this will keep name same, but change file loc and filesize
+	fstream contentList;
+	string path;
+	cout << "What will the new file's path be?" << endl;
+	cin >> path;
+	current.setFileLoc(path);
+	current.setFileSize(getFileSize(path));
+
+	for (int i = 0; i < filePaths.size(); i++)
+	{
+		if (fileName == fileNames[i])
+		{
+			filePaths[i] = current.getFileLoc();
+			fileSizes[i] = current.getFileSize();
+		}
+	}
+
+	contentList.open("contentList.csv", ios::out);
+	for (int i = 0; i < filePaths.size(); i++)
+	{
+		contentList << fileNames[i] << "," << fileSizes[i] << "," << filePaths[i] << "," << ownerIDs[i] << ",\n";
+	}
+	contentList.close();
+
 	return true;
 }
-bool changeFileName()
+bool changeFileName(int userID, string fileName)
 {
 	//this will keep fileloc and filesize the same, but change the name
+	vector<string> fileNames = getFileNames();
+	vector<string> filePaths = getFileLocations();
+	vector<string> fileSizes = getFileSizes();
+	vector<string> ownerIDs = getFileOwners();
+	content current(getFileSize(getFileLoc(fileName)), fileName, getFileLoc(fileName), userID); //init the content being manipulated
+	//this will keep name same, but change file loc and filesize
+	fstream contentList;
+	string newName;
+	cout << "What will the new file's path be?" << endl;
+	cin >> newName;
+	current.setFileName(newName);
+
+	for (int i = 0; i < fileNames.size(); i++)
+	{
+		if (fileName == fileNames[i])
+		{
+			fileNames[i] = current.getFileName();
+		}
+	}
+
+	contentList.open("contentList.csv", ios::out);
+	for (int i = 0; i < filePaths.size(); i++)
+	{
+		contentList << fileNames[i] << "," << fileSizes[i] << "," << filePaths[i] << "," << ownerIDs[i] << ",\n";
+	}
+	contentList.close();
+
 	return true;
 }
 
-bool checkPerm()
+bool checkPerm(int userID, string fileName)
 {
 	//this will check if user can own or not, if group is admin always return true
-	return true;
+	vector<string> fileNames = getFileNames();
+	vector<string> ownerIds = getFileOwners();
+
+	for (int i = 0; i < fileNames.size(); i++)
+	{
+		if (fileName == fileNames[i])
+		{
+			//match
+			if (to_string(userID) == ownerIds[i])
+			{
+				return true;
+			}
+		}
+	}
+	return false;
+}
+
+bool changePerm(int userID)
+{
+	string username, line, userConfirmation;
+	int choice;
+	bool choiceLoop = true;
+	bool usernameExists = false;
+	user currentUser;
+	fstream userList;
+	vector<string> usernameList = getUsers();
+	vector<string> userInfo;
+	int i = 0, j = 0;
+
+	do {
+		do
+		{
+			cout << "Which user would you like to modify?" << endl;
+			cin >> username;
+			//modify username's permissions, make them an admin if they are user, delete them if they are user
+			for (i = 0; i < usernameList.size(); i++)
+			{
+				if (username == usernameList[i])
+				{
+					usernameExists = true;
+					if (username == currentUser.getUser())
+					{
+						cout << "You can't select yourself" << endl;
+						return false;
+					}
+					break;
+				}
+			}
+		} while (usernameExists == false);
+		
+		//assign user info here
+		currentUser = setCurrentUser(username);
+
+		cout << "Would you like to (1)Delete User, (2)Promote User, (3) Demote User, or (4)Exit?" << endl;
+		cin >> choice;
+
+		if (choice == 1)
+		{
+			//delete the user
+			cout << "Are you sure you want to delete " << currentUser.getUser() << "? (Y,N)" << endl;
+			cin >> userConfirmation;
+			if (userConfirmation == "y" || userConfirmation == "Y")
+			{
+				//delete user
+				userList.open("userList.csv");
+				while (getline(userList, line))
+				{
+					if ((j != i))
+					{
+						size_t begin, end = 0;
+						string delim = ",";
+						while (((end = line.find(delim)) != string::npos))
+						{
+							userInfo.push_back(line.substr(0, end));
+							line.erase(0, end + delim.length());
+						}
+					}
+					j++;
+				}
+				userList.close();
+				
+				int x = 1;
+				for (int k = 0; k < userInfo.size(); k++)
+				{
+					if (k % 4 == 0 && k != 0)
+					{
+						userInfo[k] = to_string(x);
+						x++;
+					}
+				}
+
+				userList.open("userList.csv", ios::out);
+				for (int k = 0; k < userInfo.size(); k++)
+				{
+					userList << userInfo[k] << ",";
+					if (((k + 1 )% 4 == 0) && k != 0)
+					{
+						userList << "\n";
+					}
+				}
+				userList.close();
+				cout << "User deleted" << endl;
+				return true;
+			}
+			else if (userConfirmation == "N" || userConfirmation == "n")
+			{
+				cout << "Returning to home screen" << endl;
+				return false;
+			}
+		}
+		else if (choice == 2)
+		{
+			//Promote user if user
+			if (currentUser.getGroup() == "admin")
+			{
+				cout << "User is already admin" << endl;
+				return false;
+			}
+			else
+			{
+				//promote the user
+				currentUser.setGroup("admin");
+				userList.open("userList.csv");
+				while (getline(userList, line))
+				{
+						size_t begin, end = 0;
+						string delim = ",";
+						while (((end = line.find(delim)) != string::npos))
+						{
+							userInfo.push_back(line.substr(0, end));
+							line.erase(0, end + delim.length());
+						}
+					j++;
+				}
+
+				for (int k = 0; k < userInfo.size(); k++)
+				{
+					if (currentUser.getUser() == userInfo[k])
+					{
+						userInfo[k + 2] = currentUser.getGroup();
+					}
+				}
+
+				userList.close();
+				userList.open("userList.csv", ios::out);
+				for (int k = 0; k < userInfo.size(); k++)
+				{
+					userList << userInfo[k] << ",";
+					if (((k + 1) % 4 == 0) && k != 0)
+					{
+						userList << "\n";
+					}
+				}
+				userList.close();
+				cout << "User promoted" << endl;
+				return true;
+			}
+		}
+		else if (choice == 3)
+		{
+			//Demote user if admin
+			if (currentUser.getGroup() == "user")
+			{
+				cout << "User is already standard user" << endl;
+				return false;
+			}
+			else
+			{
+				//demote the user
+				currentUser.setGroup("user");
+				userList.open("userList.csv");
+				while (getline(userList, line))
+				{
+					size_t begin, end = 0;
+					string delim = ",";
+					while (((end = line.find(delim)) != string::npos))
+					{
+						userInfo.push_back(line.substr(0, end));
+						line.erase(0, end + delim.length());
+					}
+					j++;
+				}
+
+				for (int k = 0; k < userInfo.size(); k++)
+				{
+					if (currentUser.getUser() == userInfo[k])
+					{
+						userInfo[k + 2] = currentUser.getGroup();
+					}
+				}
+
+				userList.close();
+				userList.open("userList.csv", ios::out);
+				for (int k = 0; k < userInfo.size(); k++)
+				{
+					userList << userInfo[k] << ",";
+					if (((k + 1) % 4 == 0) && k != 0)
+					{
+						userList << "\n";
+					}
+				}
+				userList.close();
+				cout << "User demoted" << endl;
+				return true;
+			}
+		}
+		else if (choice == 4)
+		{
+			cout << "Returning to home screen" << endl;
+			return false;
+		}
+		else
+		{
+			cout << "Please enter a correct option" << endl;
+		}
+	} while (choiceLoop == true);
+
 }

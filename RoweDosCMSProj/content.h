@@ -26,6 +26,11 @@ public:
 	string getFileLoc() { return fileLoc; }
 	int getOwnerID() { return ownerID; }
 
+	bool setFileSize(float fileSize) { this->fileSize = fileSize; return true; }
+	bool setFileName(string fileName) { this->fileName = fileName; return true; }
+	bool setFileLoc(string fileLoc) { this->fileLoc = fileLoc; return true; }
+	bool setOwnerID(int ownerID) { this->ownerID = ownerID; return true; }
+
 private:
 	float fileSize;
 	string fileName;

@@ -15,7 +15,7 @@ user login()
 	user currentUser;
 	string username;
 	string group;
-	string password;
+	string password, passwordMatch;
 	int userID;
 	int choice = -1;
 	bool loginLoop = true, loginCsv = false;
@@ -25,9 +25,16 @@ user login()
 
 
 	do
-	{
-		loginCsv = userListExist();
-		//cout << loginCsv;
+	{	
+		if (!userListExist())
+		{
+			createUserCsv();
+		}
+		if (!logFileExist())
+		{
+			createLogCsv();
+		}
+		cout << loginCsv << endl;
 		cout << "Welcome, would you like to (1)login, (2)register, or (3)exit the program?" << endl;
 		cin >> choice;
 		switch (choice)
@@ -41,18 +48,20 @@ user login()
 				if (checkDb(username, password) == false)
 				{
 					cout << "Username or password is incorrect, please try again" << endl; //dont let potential attacker know which is incorrect, user will know
+					logEvent(username, "Attempted Login");
 					break;;
 				}
 				else
 				{
 					userLoop = false;
 					currentUser = setCurrentUser(username);
+					logEvent(username, "Successful Login");
 					return currentUser;
 				}
 			}
 			break;;
 
-		case 2: //Potentially add password reentry for future version
+		case 2:
 			cout << "Enter username for registration" << endl;
 			cin >> username;
 			while (userLoop == true) {
@@ -66,6 +75,7 @@ user login()
 					userLoop = false;
 				}
 			}
+			//start loop
 			cout << "Enter password for registration...\nPassword must have 3 of the following\nUppercase Letters, Lowercase Letters, Numbers, and Symbols(@#$%&)" << endl;
 			cin >> password;
 			while (passLoop == true) {
@@ -76,13 +86,27 @@ user login()
 				}
 				else
 				{
-					passLoop = false;
+					cout << "Re-enter your password..." << endl;
+					cin >> passwordMatch;
+
+					if (password == passwordMatch)
+					{
+						passLoop = false;
+					}
+					else
+					{
+						cout << "Password does not match, please re-enter again" << endl;
+						passLoop = true;
+					}
 				}
 			}
+
+			//end loop
 
 			regSuccess = regUser(username, password, "user"); //registers user into xlsx
 			if (regSuccess == true)
 			{
+				logEvent(username, "Registered User");
 				return setCurrentUser(username);
 			}
 			break;;
@@ -103,7 +127,9 @@ bool userListExist()
 {
 	fstream fileStream("userList.csv");
 	if (fileStream.fail())
+	{
 		return false;
+	}
 	return true;
 }
 
