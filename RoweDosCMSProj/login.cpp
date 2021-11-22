@@ -118,6 +118,7 @@ user login()
 
 		case 3: //exits on choice 3
 			cout << "Come again homie" << endl;
+			logEvent("unregistered user", "Exited Program");
 			exit(0);
 		default: //default loops login
 			cout << "Please enter a valid choice, 1, 2 or 3" << endl;
