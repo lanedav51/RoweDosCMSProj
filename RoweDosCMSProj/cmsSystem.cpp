@@ -60,6 +60,7 @@ int displayUserOptions(int userID)
 			break;;
 		case 5:
 			cout << "Come again" << endl;
+			logEvent(getUsername(userID), "Exited Program");
 			return 0;
 			break;;
 		default:
@@ -118,6 +119,7 @@ int displayAdminOptions(int userID)
 			break;;
 		case 6:
 			cout << "Come again" << endl;
+			logEvent(getUsername(userID), "Exited Program");
 			return 0;
 			break;;
 		default:
@@ -178,17 +180,14 @@ bool viewContent(int userID)
 			cout << fileNames[i] << "         " << fileSizes[i] << "             " << fileLocs[i] << endl;
 		}
 	}
-	//logEvent(username, "Viewed Content");
+	logEvent(getUsername(userID), "Viewed Content");
 	return true;
 }
 
 string getUsername(int userID)
 {
 	vector<string> usernameList = getUsers();
-	for (int i = 0; i < usernameList.size(); i++)
-	{
-
-	}
+	return usernameList[userID];
 }
 
 vector<string> getFileNames()
@@ -378,6 +377,8 @@ bool addContent(int userID, string fileName, string fileLoc)
 	if (fileLocationMatch == true || fileNameMatch == true)
 	{
 		cout << "File locations or name exists, please try again" << endl;
+		string log = "Attempted to add file  " + fileName;
+		logEvent(getUsername(userID), log);
 		return false;
 	}
 	else
@@ -387,6 +388,8 @@ bool addContent(int userID, string fileName, string fileLoc)
 		contentList.open("contentList.csv", ios::app);
 		contentList << fileName << "," << getFileSize(fileLoc) << "," << fileLoc << "," << userID << ",\n";
 		contentList.close();
+		string log = "Successfully added file  " + fileName;
+		logEvent(getUsername(userID), log);
 		return true;
 	}
 	return false;
@@ -446,6 +449,8 @@ bool deleteContent(int userID, string fileName)
 					}
 					contentList.close();
 					cout << "File deleted" << endl;
+					string log = "Successfully deleted file " + fileName;
+					logEvent(getUsername(userID), log);
 					return true;
 				}
 				else if(userConfirmation == "N" || userConfirmation == "n")
@@ -458,6 +463,8 @@ bool deleteContent(int userID, string fileName)
 			else
 			{
 				cout << "You are not the owner of this file" << endl;
+				string log = "Attmpted to delete file " + fileName;
+				logEvent(getUsername(userID), log);
 				return false;
 			}
 			
@@ -491,6 +498,8 @@ bool modifyContent(int userID)
 			}
 			else
 			{
+				string log = "Attempted to modify file " + fileName;
+				logEvent(getUsername(userID), log);
 				cout << "You do not have permission to modify this file" << endl;
 			}
 		}
@@ -549,6 +558,9 @@ bool overrideContent(int userID, string fileName)
 	}
 	contentList.close();
 
+	string log = "Modified file path for " + fileName;
+	logEvent(getUsername(userID), log);
+
 	return true;
 }
 bool changeFileName(int userID, string fileName)
@@ -581,6 +593,9 @@ bool changeFileName(int userID, string fileName)
 	}
 	contentList.close();
 
+	string log = "Changed file name from " + fileName + " to " + newName;
+	logEvent(getUsername(userID), log);
+
 	return true;
 }
 
@@ -606,17 +621,16 @@ bool checkPerm(int userID, string fileName)
 
 bool changePerm(int userID)
 {
-	string username, line, userConfirmation;
-	int choice;
 	bool choiceLoop = true;
-	bool usernameExists = false;
-	user currentUser;
-	fstream userList;
-	vector<string> usernameList = getUsers();
-	vector<string> userInfo;
-	int i = 0, j = 0;
-
 	do {
+		string username, line, userConfirmation;
+		int choice;
+		bool usernameExists = false;
+		user currentUser;
+		fstream userList;
+		vector<string> usernameList = getUsers();
+		vector<string> userInfo;
+		int i = 0, j = 0;
 		do
 		{
 			cout << "Which user would you like to modify?" << endl;
@@ -703,6 +717,8 @@ bool changePerm(int userID)
 			if (currentUser.getGroup() == "admin")
 			{
 				cout << "User is already admin" << endl;
+				string log = "Attempted to promote user " + currentUser.getUser();
+				logEvent(getUsername(userID), log);
 				return false;
 			}
 			else
@@ -742,6 +758,8 @@ bool changePerm(int userID)
 				}
 				userList.close();
 				cout << "User promoted" << endl;
+				string log = "Promoted user " + currentUser.getUser();
+				logEvent(getUsername(userID), log);
 				return true;
 			}
 		}
@@ -751,6 +769,8 @@ bool changePerm(int userID)
 			if (currentUser.getGroup() == "user")
 			{
 				cout << "User is already standard user" << endl;
+				string log = "Attempted to demote user " + currentUser.getUser();
+				logEvent(getUsername(userID), log);
 				return false;
 			}
 			else
@@ -790,6 +810,8 @@ bool changePerm(int userID)
 				}
 				userList.close();
 				cout << "User demoted" << endl;
+				string log = "Demoted user " + currentUser.getUser();
+				logEvent(getUsername(userID), log);
 				return true;
 			}
 		}

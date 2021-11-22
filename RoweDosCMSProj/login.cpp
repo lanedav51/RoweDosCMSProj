@@ -23,7 +23,7 @@ user login()
 	bool userLoop = true;
 	bool regSuccess = false;
 
-
+	logEvent("unregistered user", "Started the program");
 	do
 	{	
 		if (!userListExist())
@@ -42,6 +42,11 @@ user login()
 		case 1:
 			cout << "Enter username... " << endl;
 			cin >> username;
+			if (username == "user" || username == "admin")
+			{
+				cout << "Cannot choose that username";
+				break;;
+			}
 			cout << "Enter password... " << endl;
 			cin >> password;
 			while (userLoop == true) { //accept and check both

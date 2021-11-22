@@ -22,6 +22,8 @@ vector<string> getFileLocations();
 vector<string> getFileSizes();
 vector<string> getFileOwners();
 
+string getUsername(int userID);
+
 bool fileExist(string fileLoc);
 bool contentListExist();
 bool createContentCsv();

@@ -3,24 +3,28 @@
 #include <ctime>
 #include <fstream>
 #include "logs.h"
+#include "time.h"
 using namespace std;
 
 bool logEvent(string username, string logDesc)
 {
+	struct tm newtime;
+	time_t now = time(0);
+	localtime_s(&newtime, &now);
 	//logs an event that happens, giving user information, time, and action
-	time_t todayTime = time(0);
-	tm* currentTime = localtime(&todayTime);
-	int year = 1900 + (currentTime->tm_year);
-	int month = 1 + currentTime->tm_mon;
-	int day = currentTime->tm_mday;
-	int hour = 1 + currentTime->tm_hour;
-	int min = 1 + currentTime->tm_min;
-	int sec = 1 + currentTime->tm_sec;
+	int year = 1900 + newtime.tm_year;
+	int month = 1 + newtime.tm_mon;
+	int day = newtime.tm_mday;
+	int hour = newtime.tm_hour;
+	int min = newtime.tm_min;
+	int sec = newtime.tm_sec;
 
 	string date = to_string(year) + "/" + to_string(month) + "/" + to_string(day);
-	string time = to_string(hour) + "/" + to_string(min) + "/" + to_string(sec);
-	
-	logEntry log(date, time, username, logDesc);
+	string time = to_string(hour) + ":" + to_string(min) + ":" + to_string(sec);
+
+
+
+	logEntry log(date,time, username, logDesc);
 
 	ofstream logFile;
 	logFile.open("logFile.csv", ios::app);
