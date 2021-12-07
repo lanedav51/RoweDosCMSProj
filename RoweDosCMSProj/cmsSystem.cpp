@@ -5,7 +5,6 @@
 #include <string>
 #include <regex>
 #include <sstream>
-#include <filesystem>
 #include "user.h"
 #include "logs.h"
 #include "login.h"
@@ -117,17 +116,6 @@ bool bookListExist()
 	}
 	return true;
 }
-
-bool fileExist(string filePath)
-{
-	fstream fileStream(filePath);
-	if (fileStream.fail())
-	{
-		return false;
-	}
-	return true;
-}
-
 
 bool createBookCsv()
 {
@@ -445,30 +433,6 @@ bool deleteBook(int userID)
 	//lastly confirm deletion
 	cout << "Filename not found\n";
 	return false;
-}
-
-bool viewContent(int userID)
-{
-	cout << "Here are the files you have access to...\n_________________________________________\nNAME          FILESIZE         FILE LOCATION\n___________________________________________________\n";
-	//For each line, if userID is equal to ownerID, print out the other 3
-	vector<string> fileNames, fileLocs, fileOwners;
-	vector<string> fileSizes;
-	fileNames = getFileNames();
-	fileLocs = getFileLocations();
-	fileSizes = getFileSizes();
-	fileOwners = getFileOwners();
-
-	int i = 0;
-	//cout << fileOwners.size();
-	for (i = 0; i < fileOwners.size(); i++)
-	{
-		if (to_string(userID) == fileOwners[i])
-		{
-			cout << fileNames[i] << "         " << fileSizes[i] << "             " << fileLocs[i] << endl;
-		}
-	}
-	logEvent(getUsername(userID), "Viewed Content");
-	return true;
 }
 
 string getUsername(int userID)

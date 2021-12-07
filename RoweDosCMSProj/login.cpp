@@ -40,12 +40,17 @@ user login()
 		switch (choice)
 		{
 		case 1:
-			cout << "Enter username... " << endl;
+			cout << "Enter username (Enter X to exit)... " << endl;
 			cin >> username;
 			if (username == "user" || username == "admin")
 			{
 				cout << "Cannot choose that username";
 				break;;
+			}
+			else if (username == "X")
+			{
+				cout << "Exiting program" << endl;
+				exit(0);
 			}
 			cout << "Enter password... " << endl;
 			cin >> password;
@@ -67,7 +72,7 @@ user login()
 			break;;
 
 		case 2:
-			cout << "Enter username for registration" << endl;
+			cout << "Enter username for registration (Enter X to exit)" << endl;
 			cin >> username;
 			while (userLoop == true) {
 				if (checkUniqueUser(username) == false)
@@ -75,15 +80,25 @@ user login()
 					cout << "Username already taken, please enter another one" << endl;
 					cin >> username;
 				}
+				else if (username == "X")
+				{
+					cout << "Exiting program" << endl;
+					exit(0);
+				}
 				else
 				{
 					userLoop = false;
 				}
 			}
 			//start loop
-			cout << "Enter password for registration...\nPassword must have 3 of the following\nUppercase Letters, Lowercase Letters, Numbers, and Symbols(@#$%&)" << endl;
+			cout << "Enter password for registration (Enter X to exit)...\nPassword must have 3 of the following\nUppercase Letters, Lowercase Letters, Numbers, and Symbols(@#$%&)" << endl;
 			cin >> password;
 			while (passLoop == true) {
+				if (password == "X")
+				{
+					cout << "Exiting program" << endl;
+					exit(0);
+				}
 				if (checkComplexity(password) == false)
 				{
 					cout << "Please enter another password...\nPassword must have 3 of the following\nUppercase Letters, Lowercase Letters, Numbers, and Symbols(@#$%&)" << endl;

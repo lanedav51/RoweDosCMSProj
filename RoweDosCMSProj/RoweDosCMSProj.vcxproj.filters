@@ -21,9 +21,6 @@
     <ClInclude Include="cmsSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="content.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="logs.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -53,9 +50,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="userList.csv">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="contentList.csv">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="logFile.csv">
