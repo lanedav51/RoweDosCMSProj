@@ -10,53 +10,37 @@
 #include "logs.h"
 #include "login.h"
 #include "cmsSystem.h"
-#include "content.h"
+#include "book.h"
 using namespace std;
 
-int displayUserOptions(int userID)
+int displayBookUserOptions(int userID)
 {
 	int choice = -1;
 	bool choiceLoop = true;
 	string fileName, fileLoc;
 	bool inputLoop = false;
 
-	if (contentListExist() == false)
+	if (bookListExist() == false)
 	{
-		createContentCsv();
+		createBookCsv();
 	}
 
 	do {
-		cout << "1) View Content 2) Add Content 3) Delete Content\n4) Modify Content 5) Exit Program" << endl;
+		cout << "1) Check Out Books 2) Check In Books 3) View Checked Out Books\n4) View All Available Books 5) Exit Program" << endl;
 		cin >> choice;
 		switch (choice)
 		{
 		case 1:
-			viewContent(userID);
+			checkOut(userID);
 			break;;
 		case 2:
-			do {
-				cout << "What would you like to call your file?\n";
-				cin >> fileName;
-				cout << "What is the location of your file?\n";
-				cin >> fileLoc;
-				if (!fileExist(fileLoc))
-				{
-					cout << "File doesn't exist" << endl;
-					break;;
-				}
-				if (addContent(userID, fileName, fileLoc) == true)
-				{
-					inputLoop = false;
-				}
-			} while (inputLoop == true);
+			checkIn(userID);
 			break;;
 		case 3:
-			cout << "What file would you like to delete?\n";
-			cin >> fileName;
-			deleteContent(userID, fileName);
+			listCheckOut(userID);
 			break;;
 		case 4:
-			modifyContent(userID);
+			listAll(userID);
 			break;;
 		case 5:
 			cout << "Come again" << endl;
@@ -69,58 +53,49 @@ int displayUserOptions(int userID)
 		}
 	} while (choiceLoop == true);
 }
-int displayAdminOptions(int userID)
+
+int displayBookAdminOptions(int userID)
 {
 	int choice = -1;
 	bool choiceLoop = true;
 	bool inputLoop = false;
 	string fileName, fileLoc;
 
-	if (contentListExist() == false)
+	if (bookListExist() == false)
 	{
-		createContentCsv();
+		createBookCsv();
 	}
 
 	do {
-		cout << "1) View Content 2) Add Content 3) Delete Content\n4) Modify Content 5) Edit User Privileges 6) Print Logs 7) Exit Program" << endl;
+		cout << "1) Check Out Books 2) Check In Books 3) View Checked Out Books\n4) View All Available Books 5) Add Books 6) Delete Books 7) Edit User Privileges 8) Print Logs 9) Exit Program" << endl;
 		cin >> choice;
 		switch (choice)
 		{
 		case 1:
-			viewContent(userID);
+			checkOut(userID);
 			break;;
 		case 2:
-			do {
-				cout << "What would you like to call your file?\n";
-				cin >> fileName;
-				cout << "What is the location of your file?\n";
-				cin >> fileLoc;
-				if (!fileExist(fileLoc))
-				{
-					cout << "File doesn't exist" << endl;
-					break;;
-				}
-				if (addContent(userID, fileName, fileLoc) == false)
-				{
-					inputLoop = false;
-				}
-			} while (inputLoop == true);
+			checkIn(userID);
 			break;;
 		case 3:
-			cout << "What file would you like to delete?\n";
-			cin >> fileName;
-			deleteContent(userID, fileName);
+			listCheckOut(userID);
 			break;;
 		case 4:
-			modifyContent(userID);
+			listAll(userID);
 			break;;
 		case 5:
-			changePerm(userID);
+			addBook(userID);
 			break;;
 		case 6:
-			printReport();
+			deleteBook(userID);
 			break;;
 		case 7:
+			changePerm(userID);
+			break;;
+		case 8:
+			printReport();
+			break;;
+		case 9:
 			cout << "Come again" << endl;
 			logEvent(getUsername(userID), "Exited Program");
 			return 0;
@@ -133,9 +108,9 @@ int displayAdminOptions(int userID)
 
 }
 
-bool contentListExist()
+bool bookListExist()
 {
-	fstream fileStream("contentList.csv");
+	fstream fileStream("bookList.csv");
 	if (fileStream.fail())
 	{
 		return false;
@@ -153,14 +128,323 @@ bool fileExist(string filePath)
 	return true;
 }
 
-bool createContentCsv()
+
+bool createBookCsv()
 {
-	fstream contentList;
-	contentList.open("contentList.csv", fstream::out);
-	contentList << "FILE_NAME," << "FILE_SIZE," << "FILE_LOC," << "OWNER_ID," << "\n";
-	contentList.close();
+	fstream bookList;
+	bookList.open("bookList.csv", fstream::out);
+	bookList << "BOOK_ID," << "TITLE," << "AUTHOR," << "CHECKOUT," << "TIME," << "\n";
+	bookList.close();
 	cout << "CSV Made" << endl;
 	return true;
+}
+
+string getDate()
+{
+	struct tm newtime;
+	time_t now = time(0);
+	localtime_s(&newtime, &now);
+	//logs an event that happens, giving user information, time, and action
+	int year = 1900 + newtime.tm_year;
+	int month = 1 + newtime.tm_mon;
+	int day = newtime.tm_mday;
+
+	string date = to_string(year) + "/" + to_string(month) + "/" + to_string(day);
+	return date;
+}
+
+bool checkOut(int userID)
+{
+	vector<string> names, authors, users, times;
+	getBookInfo(names, authors, users, times);
+	string bookName;
+	bool match = false;
+	int i;
+	//Prompts user for which book
+	//If other user has it, let current user know
+	//If it doesn't exist, let current user know
+	//If it does exist, assign user to book and set time checked out
+	//All it does is set the time checked out and assign CHECKOUT to current user?
+	cout << "Which book would you like to check out?" << endl;
+	cin >> bookName;
+
+	for (i = 0; i < names.size(); i++)
+	{
+		if (bookName == names[i])
+		{
+			match = true;
+			if (users[i] == "false")
+			{
+				book current(to_string(i), names[i], authors[i], users[i], times[i]); //init the content being manipulated
+	//this will keep name same, but change file loc and filesize
+				fstream bookList;
+				current.setUser(to_string(userID));
+				current.setDate(getDate());
+
+				for (int i = 0; i < names.size(); i++)
+				{
+					if (bookName == names[i])
+					{
+						users[i] = current.getUser();
+						times[i] = current.getDate();
+					}
+				}
+
+				bookList.open("bookList.csv", ios::out);
+				for (int i = 0; i < names.size(); i++)
+				{
+					bookList << i << "," << names[i] << "," << authors[i] << "," << users[i] << "," << times[i] << ",\n";
+				}
+				bookList.close();
+
+				string log = "Checked out book " + bookName;
+				logEvent(getUsername(userID), log);
+				return true;
+
+			}
+			else
+			{
+				cout << "Book is already checked out by another user" << endl;
+				return false;
+			}
+		}
+		else
+		{
+			match = false;
+		}
+	}
+	if (match == false)
+	{
+		cout << "Book doesn't exist, returning to menu" << endl;
+		return false;
+	}
+}
+
+bool checkIn(int userID)
+{
+	vector<string> names, authors, users, times;
+	getBookInfo(names, authors, users, times);
+	string bookName;
+	bool match = false;
+	int i;
+	//Prompts user for which book
+	//Tells user if book exists, and if so, if user hasn't checked it out, alert and loop
+	//If reqs met, make checkout false and reset time to null
+	cout << "Which book would you like to check in?" << endl;
+	cin >> bookName;
+
+	for (i = 0; i < names.size(); i++)
+	{
+		if (bookName == names[i])
+		{
+			match = true;
+			if (users[i] == to_string(userID))
+			{
+				book current(to_string(i), names[i], authors[i], users[i], times[i]); //init the content being manipulated
+	//this will keep name same, but change file loc and filesize
+				fstream bookList;
+				current.setUser("false");
+				current.setDate("null");
+
+				for (int i = 0; i < names.size(); i++)
+				{
+					if (bookName == names[i])
+					{
+						users[i] = current.getUser();
+						times[i] = current.getDate();
+					}
+				}
+
+				bookList.open("bookList.csv", ios::out);
+				for (int i = 0; i < names.size(); i++)
+				{
+					bookList << i << "," << names[i] << "," << authors[i] << "," << users[i] << "," << times[i] << ",\n";
+				}
+				bookList.close();
+
+				string log = "Checked out book " + bookName;
+				logEvent(getUsername(userID), log);
+				return true;
+
+			}
+			else
+			{
+				cout << "You have not checked this book out" << endl;
+				return false;
+			}
+		}
+		else
+		{
+			match = false;
+		}
+	}
+	if (match == false)
+	{
+		cout << "Book doesn't exist, returning to menu" << endl;
+		return false;
+	}
+}
+
+bool listCheckOut(int userID)
+{
+	vector<string> names, authors, users, times;
+	getBookInfo(names, authors, users, times);
+	//Lists all books that match userID and CHECKOUT
+	cout << "Here are all of the books you have checked out: " << endl;
+	int i = 0;
+	//cout << fileOwners.size();
+	for (i = 0; i < users.size(); i++)
+	{
+		if (to_string(userID) == users[i])
+		{
+			cout << names[i] << " : " << authors[i] << endl;
+		}
+	}
+	logEvent(getUsername(userID), "Listed Checked Out Books");
+	return true;
+}
+
+bool listAll(int userID)
+{
+	vector<string> names, authors, users, times;
+	getBookInfo(names, authors, users, times);
+	//Lists all books that have false as CHECKOUT
+	cout << "Here are all of the books available for check out: " << endl;
+	//For each line, if userID is equal to ownerID, print out the other 3
+
+	int i = 0;
+	//cout << fileOwners.size();
+	for (i = 0; i < users.size(); i++)
+	{
+		if ("false" == users[i])
+		{
+			cout << names[i] << " : " << authors[i] << endl;
+		}
+	}
+	logEvent(getUsername(userID), "Listed All Books");
+	return true;
+}
+
+bool addBook(int userID)
+{
+	//add content but adding book lol
+	//take in userId and prompt user what file they want to add
+	//append csv and add the file information based on given location
+
+	//first check if the file name or location exists
+	//checks to see if username is unique
+	fstream contentList("bookList.csv");
+	vector<string> names, authors, users, times;
+	getBookInfo(names, authors, users, times);
+	bool bookNameMatch = false;
+	int columnNum = 0;
+	int val, i;
+	string line, value, bookName, authorName;
+
+	cout << "What is the name of the book you would like to add: ";
+	cin.ignore();
+	getline(cin, bookName);
+
+	cout << "What is the name of the author: ";
+	getline(cin, authorName);
+
+	for (i = 0; i < names.size(); i++)
+	{
+		if (bookName == names[i])
+		{
+			bookNameMatch = true;
+			break;
+		}
+	}
+
+	if (bookNameMatch == true)
+	{
+		cout << "Book name already exists, please try again" << endl;
+		string log = "Attempted to add book  " + bookName;
+		logEvent(getUsername(userID), log);
+		return false;
+	}
+	else
+	{
+		//add the content to csv
+		ofstream bookList;
+		bookList.open("bookList.csv", ios::app);
+		bookList << to_string(names.size()) << "," << bookName << "," << authorName << "," << "false" << "," << "null" << ",\n";
+		bookList.close();
+		string log = "Successfully added book " + bookName;
+		logEvent(getUsername(userID), log);
+		return true;
+	}
+	return false;
+}
+
+bool deleteBook(int userID)
+{
+	//delete content but deleting book lol
+	vector<string> names, authors, users, times;
+	vector<string> bookListInfo;
+	getBookInfo(names, authors, users, times);
+	string line, bookName;
+	string userConfirmation = "";
+	fstream bookList;
+
+	cout << "What is the name of the book you would like to delete: ";
+	cin.ignore();
+	getline(cin, bookName);
+
+	for (int i = 0; i < names.size(); i++)
+	{
+		if (bookName == names[i])
+		{
+			//match
+				cout << "Are you sure you wish to delete this book? (Y/N)" << endl;
+				cin >> userConfirmation;
+				if (userConfirmation == "y" || userConfirmation == "Y")
+				{
+					cout << "Book deleted" << endl;
+					int j = 0;
+					bookList.open("bookList.csv");
+					while (getline(bookList, line))
+					{
+						if ((j != i))
+						{
+							size_t begin, end = 0;
+							string delim = ",";
+							while (((end = line.find(delim)) != string::npos))
+							{
+								bookListInfo.push_back(line.substr(0, end));
+								line.erase(0, end + delim.length());
+							}
+						}
+						j++;
+					}
+					bookList.close();
+
+					bookList.open("bookList.csv", ios::out);
+					for (int k = 0; k < bookListInfo.size(); k++)
+					{
+						bookList << bookListInfo[k] << ",";
+						if (((k + 1) % 5 == 0) && k != 0)
+						{
+							bookList << "\n";
+						}
+					}
+					bookList.close();
+					string log = "Successfully deleted book " + bookName;
+					logEvent(getUsername(userID), log);
+					return true;
+				}
+				else if (userConfirmation == "N" || userConfirmation == "n")
+				{
+					cout << "Returning to home screen" << endl;
+					return false;
+				}
+		}
+	}
+
+	//lastly confirm deletion
+	cout << "Filename not found\n";
+	return false;
 }
 
 bool viewContent(int userID)
@@ -193,16 +477,15 @@ string getUsername(int userID)
 	return usernameList[userID];
 }
 
-vector<string> getFileNames()
+bool getBookInfo(vector<string>& names, vector<string>& authors, vector<string>& users, vector<string>& times)
 {
-	fstream contentList("contentList.csv");
+	fstream bookList("bookList.csv");
 	vector<string> fileVal; //vector of all values comma delimited
-	vector<string> fileNames;
 	int columnNum = 0;
 	int val, i;
 	string line, value;
 
-	while (getline(contentList, line))
+	while (getline(bookList, line))
 	{
 		size_t begin, end = 0;
 		string delim = ",";
@@ -213,413 +496,17 @@ vector<string> getFileNames()
 		}
 	}
 
-	for (i = 0; i < fileVal.size(); i += 4)
+	for (i = 0; i < fileVal.size(); i += 5)
 	{
-		fileNames.push_back(fileVal[i]);
+		names.push_back(fileVal[i+1]);
+		authors.push_back(fileVal[i + 2]);
+		users.push_back(fileVal[i + 3]);
+		times.push_back(fileVal[i + 4]);
 	}
 
-	contentList.close();
-
-	return fileNames;
-}
-
-vector<string> getFileSizes()
-{
-	fstream contentList("contentList.csv");
-	vector<string> fileVal; //vector of all values comma delimited
-	vector<string> fileSizes;
-	float value;
-	int columnNum = 0;
-	int val, i;
-	string line;
-
-	while (getline(contentList, line))
-	{
-		size_t begin, end = 0;
-		string delim = ",";
-		while ((end = line.find(delim)) != string::npos)
-		{
-			fileVal.push_back(line.substr(0, end));
-			line.erase(0, end + delim.length());
-		}
-	}
-
-	for (i = 1; i < fileVal.size(); i += 4)
-	{
-		fileSizes.push_back(fileVal[i]);
-	}
-
-	contentList.close();
-
-	return fileSizes;
-}
-
-
-vector<string> getFileLocations()
-{
-	fstream contentList("contentList.csv");
-	vector<string> fileVal; //vector of all values comma delimited
-	vector<string> fileLocations;
-	int columnNum = 0;
-	int val, i;
-	string line, value;
-
-	while (getline(contentList, line))
-	{
-		size_t begin, end = 0;
-		string delim = ",";
-		while ((end = line.find(delim)) != string::npos)
-		{
-			fileVal.push_back(line.substr(0, end));
-			line.erase(0, end + delim.length());
-		}
-	}
-
-	for (i = 2; i < fileVal.size(); i += 4)
-	{
-		fileLocations.push_back(fileVal[i]);
-	}
-
-	contentList.close();
-
-	return fileLocations;
-}
-
-vector<string> getFileOwners()
-{
-	fstream contentList("contentList.csv");
-	vector<string> fileVal; //vector of all values comma delimited
-	vector<string> fileOwners;
-	int columnNum = 0;
-	int val, i;
-	string line, value;
-
-	while (getline(contentList, line))
-	{
-		size_t begin, end = 0;
-		string delim = ",";
-		while ((end = line.find(delim)) != string::npos)
-		{
-			fileVal.push_back(line.substr(0, end));
-			line.erase(0, end + delim.length());
-		}
-	}
-
-	for (i = 3; i < fileVal.size(); i += 4)
-	{
-		fileOwners.push_back(fileVal[i]);
-	}
-
-	contentList.close();
-
-	return fileOwners;
-}
-
-float getFileSize(string fileLoc)
-{
-	ifstream fileSize(fileLoc, ios::binary);
-	fileSize.seekg(0, ios::end);
-	return fileSize.tellg();
-}
-
-string getFileLoc(string fileName)
-{
-	//compare lists to lists to lists
-	vector<string> fileNames = getFileNames();
-	vector<string> fileLocations = getFileLocations();
-
-	for (int i = 0; i < fileNames.size(); i++)
-	{
-		if (fileName == fileNames[i])
-		{
-			return fileLocations[i];
-		}
-		else
-		{
-			return "Failed";
-		}
-	}
-}
-
-bool addContent(int userID, string fileName, string fileLoc)
-{
-	//take in userId and prompt user what file they want to add
-	//append csv and add the file information based on given location
-
-	//first check if the file name or location exists
-	//checks to see if username is unique
-	fstream contentList("contentList.csv");
-	vector<string> fileVal; //vector of all values comma delimited
-	vector<string> fileNames, fileLocs;
-	bool fileNameMatch = false, fileLocationMatch = false;
-	int columnNum = 0;
-	int val, i;
-	string line, value;
-
-	fileNames = getFileNames();
-	fileLocs = getFileLocations();
-
-	for (i = 0; i < fileNames.size(); i++)
-	{
-		if (fileName == fileNames[i])
-		{
-			fileNameMatch = true;
-			break;
-		}
-	}
-
-	for (i = 0; i < fileLocs.size(); i++)
-	{
-		if (fileLoc == fileLocs[i])
-		{
-			fileLocationMatch = true;
-			break;
-		}
-	}
-	
-	if (fileLocationMatch == true || fileNameMatch == true)
-	{
-		cout << "File locations or name exists, please try again" << endl;
-		string log = "Attempted to add file  " + fileName;
-		logEvent(getUsername(userID), log);
-		return false;
-	}
-	else
-	{
-		//add the content to csv
-		ofstream contentList;
-		contentList.open("contentList.csv", ios::app);
-		contentList << fileName << "," << getFileSize(fileLoc) << "," << fileLoc << "," << userID << ",\n";
-		contentList.close();
-		string log = "Successfully added file  " + fileName;
-		logEvent(getUsername(userID), log);
-		return true;
-	}
-	return false;
-}
-bool deleteContent(int userID, string fileName)
-{
-	//delete content based on name, check ownerId and match, if so delete line
-
-	//first find filename, if it doesnt exist tell user and retry
-
-	//second confirm whether owns it, if doesnt then tell user and retry
-	vector<string> contentInfo;
-	string line;
-	vector<string> fileNames = getFileNames();
-	vector<string> ownerIds = getFileOwners();
-	string userConfirmation = "";
-	fstream contentList;
-	for (int i = 0; i < fileNames.size(); i++)
-	{
-		if (fileName == fileNames[i])
-		{
-			//match
-			if (to_string(userID) == ownerIds[i])
-			{
-				//match
-				cout << "Are you sure you wish to delete this file? (Y/N)" << endl;
-				cin >> userConfirmation;
-				if (userConfirmation == "y" || userConfirmation == "Y")
-				{
-					cout << "File being deleted" << endl;
-					int j = 0;
-					contentList.open("contentList.csv");
-					while (getline(contentList, line))
-					{
-						if ((j != i))
-						{
-							size_t begin, end = 0;
-							string delim = ",";
-							while (((end = line.find(delim)) != string::npos))
-							{
-								contentInfo.push_back(line.substr(0, end));
-								line.erase(0, end + delim.length());
-							}
-						}
-						j++;
-					}
-					contentList.close();
-
-					contentList.open("contentList.csv", ios::out);
-					for (int k = 0; k < contentInfo.size(); k++)
-					{
-						contentList << contentInfo[k] << ",";
-						if (((k+1) % 4 == 0) && k != 0)
-						{
-							contentList << "\n";
-						}
-					}
-					contentList.close();
-					cout << "File deleted" << endl;
-					string log = "Successfully deleted file " + fileName;
-					logEvent(getUsername(userID), log);
-					return true;
-				}
-				else if(userConfirmation == "N" || userConfirmation == "n")
-				{
-					cout << "Returning to home screen" << endl;
-					return false;
-				}
-
-			}
-			else
-			{
-				cout << "You are not the owner of this file" << endl;
-				string log = "Attmpted to delete file " + fileName;
-				logEvent(getUsername(userID), log);
-				return false;
-			}
-			
-		}
-	}
-
-	//lastly confirm deletion
-	cout << "Filename not found\n";
-	return false;
-}
-bool modifyContent(int userID)
-{
-	//this one is weird, ask user if they want content name changed, or file changed
-	int choice;
-	bool modifyLoop = true;
-	string fileName;
-
-	do
-	{
-		cout << "Would you like to (1)Change Content Path, (2)Change File Name, or (3)Exit?" << endl;
-		cin >> choice;
-		cout << "What file would you like to modify?" << endl;
-		cin >> fileName;
-
-		if (choice == 1)
-		{
-			if (checkPerm(userID, fileName))
-			{
-				overrideContent(userID, fileName);
-				modifyLoop = false;
-			}
-			else
-			{
-				string log = "Attempted to modify file " + fileName;
-				logEvent(getUsername(userID), log);
-				cout << "You do not have permission to modify this file" << endl;
-			}
-		}
-		else if (choice == 2)
-		{
-			if (checkPerm(userID, fileName))
-			{
-				changeFileName(userID, fileName);
-				modifyLoop = false;
-			}
-			else
-			{
-				cout << "You do not have permission to modify this file" << endl;
-			}
-		}
-		else if (choice == 3)
-		{
-			cout << "Returning to home screen" << endl;
-			return false;
-		}
-		else
-		{
-			cout << "Please enter a valid option" << endl;
-		}
-	} while (modifyLoop == true);
-	return true;
-}
-bool overrideContent(int userID, string fileName)
-{
-	vector<string> fileNames = getFileNames();
-	vector<string> filePaths = getFileLocations();
-	vector<string> fileSizes = getFileSizes();
-	vector<string> ownerIDs = getFileOwners();
-	content current(getFileSize(getFileLoc(fileName)), fileName, getFileLoc(fileName), userID); //init the content being manipulated
-	//this will keep name same, but change file loc and filesize
-	fstream contentList;
-	string path;
-	cout << "What will the new file's path be?" << endl;
-	cin >> path;
-	current.setFileLoc(path);
-	current.setFileSize(getFileSize(path));
-
-	for (int i = 0; i < filePaths.size(); i++)
-	{
-		if (fileName == fileNames[i])
-		{
-			filePaths[i] = current.getFileLoc();
-			fileSizes[i] = current.getFileSize();
-		}
-	}
-
-	contentList.open("contentList.csv", ios::out);
-	for (int i = 0; i < filePaths.size(); i++)
-	{
-		contentList << fileNames[i] << "," << fileSizes[i] << "," << filePaths[i] << "," << ownerIDs[i] << ",\n";
-	}
-	contentList.close();
-
-	string log = "Modified file path for " + fileName;
-	logEvent(getUsername(userID), log);
+	bookList.close();
 
 	return true;
-}
-bool changeFileName(int userID, string fileName)
-{
-	//this will keep fileloc and filesize the same, but change the name
-	vector<string> fileNames = getFileNames();
-	vector<string> filePaths = getFileLocations();
-	vector<string> fileSizes = getFileSizes();
-	vector<string> ownerIDs = getFileOwners();
-	content current(getFileSize(getFileLoc(fileName)), fileName, getFileLoc(fileName), userID); //init the content being manipulated
-	//this will keep name same, but change file loc and filesize
-	fstream contentList;
-	string newName;
-	cout << "What will the new file's path be?" << endl;
-	cin >> newName;
-	current.setFileName(newName);
-
-	for (int i = 0; i < fileNames.size(); i++)
-	{
-		if (fileName == fileNames[i])
-		{
-			fileNames[i] = current.getFileName();
-		}
-	}
-
-	contentList.open("contentList.csv", ios::out);
-	for (int i = 0; i < filePaths.size(); i++)
-	{
-		contentList << fileNames[i] << "," << fileSizes[i] << "," << filePaths[i] << "," << ownerIDs[i] << ",\n";
-	}
-	contentList.close();
-
-	string log = "Changed file name from " + fileName + " to " + newName;
-	logEvent(getUsername(userID), log);
-
-	return true;
-}
-
-bool checkPerm(int userID, string fileName)
-{
-	//this will check if user can own or not, if group is admin always return true
-	vector<string> fileNames = getFileNames();
-	vector<string> ownerIds = getFileOwners();
-
-	for (int i = 0; i < fileNames.size(); i++)
-	{
-		if (fileName == fileNames[i])
-		{
-			//match
-			if (to_string(userID) == ownerIds[i])
-			{
-				return true;
-			}
-		}
-	}
-	return false;
 }
 
 bool changePerm(int userID)

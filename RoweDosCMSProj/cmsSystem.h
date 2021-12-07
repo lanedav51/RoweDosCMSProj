@@ -10,28 +10,21 @@
 #include "login.h"
 using namespace std;
 
-int displayUserOptions(int userID);
-int displayAdminOptions(int userID);
-
-vector<string> getFileNames();
-vector<string> getFileLocations();
-vector<string> getFileSizes();
-vector<string> getFileOwners();
-
 string getUsername(int userID);
 
+bool bookListExist();
+bool createBookCsv();
+int displayBookUserOptions(int userID);
+int displayBookAdminOptions(int userID);
+bool checkIn(int userID);
+bool checkOut(int userID);
+bool listCheckOut(int userID);
+bool listAll(int userID);
+bool addBook(int userID);
+bool deleteBook(int userID);
+bool getBookInfo(vector<string>& names, vector<string>& authors, vector<string>& users, vector<string>& times);
+
 bool fileExist(string fileLoc);
-bool contentListExist();
-bool createContentCsv();
-
-bool viewContent(int userID);
-bool addContent(int userID, string fileName, string fileLoc);
-bool deleteContent(int userID, string fileName);
-bool modifyContent(int userID);
-bool overrideContent(int userID, string fileName);
-bool changeFileName(int userID, string fileName);
-
-bool checkPerm(int userID, string fileName);
 bool changePerm(int userID);
 
 

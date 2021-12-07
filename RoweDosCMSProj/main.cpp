@@ -25,13 +25,13 @@ int main()
 	{
 		//run admin options
 		cout << "Welcome " + username + ", here are your administrative privileges" << endl;
-		displayAdminOptions(userID);
+		displayBookAdminOptions(userID);
 	}
 	else if (group == "user")
 	{
 		//run user options
 		cout << "Welcome " + username + ", here are your standard user privileges" << endl;
-		displayUserOptions(userID);
+		displayBookUserOptions(userID);
 	}
 	else
 	{

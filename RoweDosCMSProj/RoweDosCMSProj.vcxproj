@@ -139,6 +139,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="book.h" />
     <ClInclude Include="cmsSystem.h" />
     <ClInclude Include="content.h" />
     <ClInclude Include="logEntry.h" />
@@ -153,7 +154,9 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="bookList.csv" />
     <None Include="contentList.csv" />
+    <None Include="logFile.csv" />
     <None Include="userList.csv" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

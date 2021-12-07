@@ -1,2 +1,2 @@
-FILE_NAME,FILE_SIZE,FILE_LOC,OWNER_ID,
-cat,2368,C:\Users\baseb\OneDrive\Documents\dog.txt,1,
+BOOK_ID,TITLE,AUTHOR,CHECKOUT,TIME,
+1,,Nothing,false,null,

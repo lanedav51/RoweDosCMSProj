@@ -33,6 +33,9 @@
     <ClInclude Include="logEntry.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="book.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -53,6 +56,12 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="contentList.csv">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="logFile.csv">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="bookList.csv">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
