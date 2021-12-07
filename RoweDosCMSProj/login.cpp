@@ -189,7 +189,8 @@ bool regUser(string user, string pass, string group) //register user to db
 
 	if (checkUniqueUser(user) == true && checkComplexity(pass) == true)
 	{
-		userList << userId << "," << user << "," << pass << "," << "user," << "\n";
+		string encryptedPass = encryptDecryptInfo(pass);
+		userList << userId << "," << user << "," << encryptedPass << "," << "user," << "\n";
 		cout << "Registering" << endl;
 	}
 	else
@@ -262,7 +263,8 @@ bool checkDb(string user, string pass)//checks info against db
 				userInfo.push_back(line.substr(0, end));
 				line.erase(0, end + delim.length());
 			}
-			if (userInfo[2] == pass)
+			string encryptedPass = encryptDecryptInfo(pass);
+			if (userInfo[2] == encryptedPass)
 			{
 				match = true;
 				return true;
@@ -358,14 +360,16 @@ bool checkUniqueUser(string user)
 
 }
 
-string encryptInfo()//encrypts info into db
+string encryptDecryptInfo(string input)//XOR encrypts info into db
 {
-	return "true";
-}
+	string output = input;
+	char key[3] = { 'X', 'E', 'P' };
 
-string decryptInfo()//decrypts info taken from db
-{
-	return "true";
+	for (int i = 0; i < input.size(); i++)
+	{
+		output[i] = input[i] ^ key[i % (sizeof(key) / sizeof(char))];
+	}
+	return output;
 }
 
 user setCurrentUser(string username)

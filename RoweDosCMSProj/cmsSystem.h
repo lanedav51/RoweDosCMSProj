@@ -13,10 +13,6 @@ using namespace std;
 int displayUserOptions(int userID);
 int displayAdminOptions(int userID);
 
-
-bool encryptContent();
-bool decryptContent();
-
 vector<string> getFileNames();
 vector<string> getFileLocations();
 vector<string> getFileSizes();

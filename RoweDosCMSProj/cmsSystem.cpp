@@ -82,7 +82,7 @@ int displayAdminOptions(int userID)
 	}
 
 	do {
-		cout << "1) View Content 2) Add Content 3) Delete Content\n4) Modify Content 5) Edit User Privileges 6) Exit Program" << endl;
+		cout << "1) View Content 2) Add Content 3) Delete Content\n4) Modify Content 5) Edit User Privileges 6) Print Logs 7) Exit Program" << endl;
 		cin >> choice;
 		switch (choice)
 		{
@@ -118,6 +118,9 @@ int displayAdminOptions(int userID)
 			changePerm(userID);
 			break;;
 		case 6:
+			printReport();
+			break;;
+		case 7:
 			cout << "Come again" << endl;
 			logEvent(getUsername(userID), "Exited Program");
 			return 0;

@@ -25,9 +25,7 @@ bool checkComplexity(string pass);
 bool checkUniqueUser(string user);//checks to see if username is unique
 
 
-string encryptInfo();//encrypts info into db
-
-string decryptInfo();//decrypts info taken from db
+string encryptDecryptInfo(string input);//encrypts info into db
 
 user setCurrentUser(string username);//returns the current user info by constructing instance of user class, all from matching info given by username
 

@@ -9,4 +9,3 @@ bool logFileExist();
 bool createLogCsv();
 
 void printReport();
-bool downloadReport();
